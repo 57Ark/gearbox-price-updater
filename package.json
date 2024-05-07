@@ -18,10 +18,19 @@
     "lint:ci": "eslint \"**/*.ts\"",
     "typecheck:ci": "tsc --noEmit",
     "prettier": "prettier --write . && forge fmt",
-    "prettier:ci": "prettier --check . && forge fmt"
+    "prettier:ci": "prettier --check . && forge fmt",
+    "generate-types": "typechain --target=ethers-v6 'abi/**/*.json'",
+    "set-limiters-single-chain": "yarn ts-node scripts/setLimitersSingleChain.ts",
+    "set-limiters-multi-chain": "yarn ts-node scripts/setLimitersMultiChain.ts"
   },
   "dependencies": {
-    "@gearbox-protocol/sdk-gov": "^1.65.0"
+    "@gearbox-protocol/sdk-gov": "^1.65.0",
+    "@safe-global/api-kit": "^2.3.1",
+    "@safe-global/protocol-kit": "^3.1.0",
+    "@safe-global/relay-kit": "^2.1.0",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
@@ -29,11 +38,13 @@
     "@gearbox-protocol/eslint-config": "^1.6.1",
     "@gearbox-protocol/prettier-config": "^1.5.0",
     "@typechain/ethers-v6": "^0.5.1",
+    "@types/lodash-es": "^4.17.6",
     "eslint": "^8.57.0",
     "ethers": "^6.12.1",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.4.5"
   },

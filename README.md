@@ -2,7 +2,7 @@
 
 ## Gearbox protocol
 
-This repository contains the code for middleware between Gearbox V2 and third-party protocols.
+This repository contains the code for Test Task "Cooking Oracles" for Full Stack Position in Gearbox protocol.
 
 ### What is Gearbox protocol?
 
@@ -12,26 +12,48 @@ by providing liquidity; active traders, farmers, or even other protocols who can
 
 Gearbox protocol is a Marketmake ETHGlobal hackathon finalist.
 
-## Bug bounty
+## Usage
 
-This repository is subject to the Gearbox bug bounty program, per the terms defined [here]().
+### Getting Started
 
-## Documentation
+First, install the dependencies:
 
-General documentation of the Gearbox Protocol can be found [here](https://docs.gearbox.fi). Developer documentation with
-more tech-related infromation about the protocol, contract interfaces, integration guides and audits is available on the
-[Gearbox dev protal](https://dev.gearbox.fi).
+```bash
+yarn
+```
 
-## Licensing
+Generate types:
 
-The primary license for Gearbox contracts is the Business Source License 1.1 (BUSL-1.1), see [LICENSE](https://github.com/Gearbox-protocol/gearbox-contracts/blob/master/LICENSE). The files licensed under the BUSL-1.1 have appropriate SPDX headers.
+```bash
+yarn generate-types
+```
 
-## Disclaimer
+Create .env file according to .env.example
 
-This application is provided "as is" and "with all faults." Me as developer makes no representations or
-warranties of any kind concerning the safety, suitability, lack of viruses, inaccuracies, typographical
-errors, or other harmful components of this software. There are inherent dangers in the use of any software,
-and you are solely responsible for determining whether this software product is compatible with your equipment and
-other software installed on your equipment. You are also solely responsible for the protection of your equipment
-and backup of your data, and THE PROVIDER will not be liable for any damages you may suffer in connection with using,
-modifying, or distributing this software product.
+### Set Limiters on a multiple chains
+
+To set limiters on all chains run:
+
+```bash
+yarn set-limiters-multi-chain
+```
+
+### Set Limiters on a single chain
+
+To set limiters on a specific chain run:
+
+```bash
+yarn set-limiters-single-chain [chainId]
+```
+
+Replace `[chainId]` with the id of chain you need. For example:
+
+```
+yarn set-limiters-single-chain 1
+```
+
+## Supported chains
+
+- Ethereum (1)
+- Arbitrum (42161)
+- Optimism (10)
