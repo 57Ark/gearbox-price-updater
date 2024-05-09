@@ -8,7 +8,7 @@ interface ChainlinkPriceFeed {
   chainlinkPriceFeedAddress: string;
 }
 
-export const getLatestRoundData = async ({
+export const getChainlinkLatestRoundData = async ({
   chainId,
   chainlinkPriceFeedAddress,
 }: ChainlinkPriceFeed) => {

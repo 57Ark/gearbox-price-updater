@@ -3,7 +3,6 @@ import Safe, { EthersAdapter } from "@safe-global/protocol-kit";
 import { ethers, JsonRpcProvider, parseUnits, Wallet } from "ethers";
 
 import { SingleAssetLPPriceFeed__factory } from "../types/ethers-contracts";
-import { getLatestRoundData } from "./chainlink";
 import {
   ACCEPTABLE_PRICE_FEED_TYPES,
   PRIVATE_KEY,
@@ -11,7 +10,7 @@ import {
 } from "./constants";
 import { getPriceFeeds } from "./getPriceFeedList";
 import { getNetworkByChainId } from "./network";
-import { getChainlinkPriceFeed, getPriceFeedType } from "./priceFeed";
+import { getLatestRoundData, getPriceFeedType } from "./priceFeed";
 
 export async function setLimiters(chainId: number | string) {
   const network = getNetworkByChainId(chainId);
@@ -60,22 +59,13 @@ export async function setLimiters(chainId: number | string) {
     return;
   }
 
-  console.log(`Collecting chainlink oracles on ${network.name}...`);
-  const chainLinkPriceFeedList = await Promise.all(
-    filteredPriceFeeds.map(priceFeed =>
-      getChainlinkPriceFeed({
-        chainId,
-        priceFeedAddress: priceFeed.priceFeedAddress,
-      }),
-    ),
-  );
-
   console.log(`Retrieving current prices on ${network.name}...`);
   const latestRoundData = await Promise.all(
-    chainLinkPriceFeedList.map(chainLinkPriceFeed =>
+    filteredPriceFeeds.map(priceFeed =>
       getLatestRoundData({
         chainId,
-        chainlinkPriceFeedAddress: chainLinkPriceFeed.chainlinkPriceFeedAddress,
+        priceFeedAddress: priceFeed.priceFeedAddress,
+        priceFeedType: priceFeed.priceFeedType ?? "",
       }),
     ),
   );
