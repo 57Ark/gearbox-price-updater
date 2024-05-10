@@ -1,14 +1,14 @@
 {
-  "name": "@gearbox-protocol/template-repository",
-  "description": "Gearbox template repository",
-  "version": "0.0.0",
+  "name": "gearbox-price-updater",
+  "description": "Gearbox Oracles' price update scripts",
+  "version": "1.0.0",
   "homepage": "https://gearbox.fi",
   "keywords": [
     "gearbox"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Gearbox-protocol/template-repository"
+    "url": "https://github.com/57Ark/gearbox-price-updater"
   },
   "license": "BUSL-1.1",
   "scripts": {
