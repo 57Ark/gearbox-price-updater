@@ -1,16 +1,14 @@
-import SafeApiKit from "@safe-global/api-kit";
-import Safe, { EthersAdapter } from "@safe-global/protocol-kit";
-import { ethers, JsonRpcProvider, parseUnits, Wallet } from "ethers";
+import { parseUnits } from "ethers";
 
 import { SingleAssetLPPriceFeed__factory } from "../types/ethers-contracts";
-import {
-  ACCEPTABLE_PRICE_FEED_TYPES,
-  PRIVATE_KEY,
-  SAFE_ADDRESSES,
-} from "./constants";
-import { getPriceFeeds } from "./getPriceFeedList";
+import { ACCEPTABLE_PRICE_FEED_TYPES } from "./constants";
 import { getNetworkByChainId } from "./network";
-import { getLatestRoundData, getPriceFeedType } from "./priceFeed";
+import {
+  getLatestRoundData,
+  getPriceFeeds,
+  getPriceFeedType,
+} from "./priceFeed";
+import { uploadTransactionToSafe } from "./safe";
 
 export async function setLimiters(chainId: number | string) {
   const network = getNetworkByChainId(chainId);
@@ -70,19 +68,7 @@ export async function setLimiters(chainId: number | string) {
     ),
   );
 
-  const provider = new JsonRpcProvider(network.rpc);
-  const signer = new Wallet(PRIVATE_KEY, provider);
-  const safeAddress = SAFE_ADDRESSES[network.chainId];
-
   console.log(`Sending transactions to Safe on ${network.name}...`);
-
-  const ethAdapter = new EthersAdapter({
-    ethers,
-    signerOrProvider: signer,
-  });
-
-  const safeService = new SafeApiKit({ chainId: BigInt(network.chainId) });
-  const safeSdk = await Safe.create({ ethAdapter, safeAddress });
 
   const transactions = filteredPriceFeeds.map((priceFeed, index) => {
     const newLowerBound = (
@@ -98,18 +84,7 @@ export async function setLimiters(chainId: number | string) {
     };
   });
 
-  const safeTransaction = await safeSdk.createTransaction({ transactions });
-  const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
-  const senderSignature = await safeSdk.signHash(safeTxHash);
-
-  await safeService.proposeTransaction({
-    safeAddress,
-    safeTransactionData: safeTransaction.data,
-    safeTxHash,
-    senderAddress: signer.address,
-    senderSignature: senderSignature.data,
-    origin: `Set limiter for ${filteredPriceFeeds.length} price feed${filteredPriceFeeds.length > 1 ? "s" : ""}`,
-  });
+  await uploadTransactionToSafe({ chainId, transactions });
 
   console.log(
     `\x1b[32mSent ${transactions.length} transaction${transactions.length > 1 ? "s" : ""} to Safe on ${network.name}\x1b[0m`,

@@ -1,16 +1,22 @@
 import { PriceFeedType } from "@gearbox-protocol/sdk-gov";
 import { isZeroAddress } from "@safe-global/protocol-kit/dist/src/utils";
-import { Contract, id, JsonRpcProvider } from "ethers";
-import { minBy } from "lodash";
+import { Contract, EventLog, id, JsonRpcProvider } from "ethers";
+import { flatten, minBy, uniq } from "lodash";
 
 import {
   IPriceFeedType__factory,
   MultipleAssetLPPriceFeed__factory,
+  PriceOracleV3__factory,
   SingleAssetLPPriceFeed__factory,
 } from "../types/ethers-contracts";
+import { PriceFeedInfo } from "../types/priceFeed.types";
+import {
+  PRICE_FEED_TYPE_ASSETS_QUANTITY,
+  PRICE_ORACLES,
+} from "../utils/constants";
+import { getBlock } from "../utils/getBlock";
+import { getNetworkByChainId } from "../utils/network";
 import { getChainlinkLatestRoundData } from "./chainlink";
-import { PRICE_FEED_TYPE_ASSETS_QUANTITY } from "./constants";
-import { getNetworkByChainId } from "./network";
 
 interface PriceFeed {
   chainId: number | string;
@@ -23,6 +29,56 @@ interface IndexedPriceFeed extends PriceFeed {
 
 interface PriceFeedWithType extends PriceFeed {
   priceFeedType: string;
+}
+
+export async function getPriceFeeds(chainId: number | string) {
+  const network = getNetworkByChainId(chainId);
+  const provider = new JsonRpcProvider(network.rpc);
+
+  console.log(`Collecting price feed contracts on ${network.name}...`);
+
+  const priceOracleInfo = PRICE_ORACLES[network.chainId];
+  const currentBlock = await getBlock(network.chainId);
+
+  const blockRanges = new Array(
+    Math.ceil(
+      (currentBlock - priceOracleInfo.deployBlock) / network.blocksRange,
+    ),
+  )
+    .fill(0)
+    .map((_, index) => {
+      const start = priceOracleInfo.deployBlock + network.blocksRange * index;
+      const end = Math.min(start + network.blocksRange - 1, currentBlock);
+
+      return {
+        start,
+        end,
+      };
+    });
+
+  const priceOracle = new Contract(
+    priceOracleInfo.address,
+    PriceOracleV3__factory.abi,
+    provider,
+  );
+  const eventFilter = priceOracle.filters.SetPriceFeed();
+
+  const events = flatten(
+    await Promise.all(
+      blockRanges.map(({ start, end }) =>
+        priceOracle.queryFilter(eventFilter, start, end),
+      ),
+    ),
+  );
+
+  const priceFeedList: PriceFeedInfo[] = uniq(
+    events.map(event => ({
+      priceFeedAddress: (event as EventLog).args[1],
+      tokenAddress: (event as EventLog).args[0],
+    })),
+  );
+
+  return priceFeedList;
 }
 
 export const getPriceFeedType = async ({
